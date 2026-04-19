@@ -21,7 +21,10 @@ public class Main {
         ExecutorService executor = Executors.newFixedThreadPool(20);
         Router router = new Router();
         router.addRoute("GET","/", req -> HttpResponse.ok("hello world"));
-        router.addRoute("GET","/sobre", req -> HttpResponse.ok("sobre"));
+        router.addRoute("GET","/users", req -> {
+            String query = req.getQueryParams().get("id");
+            return HttpResponse.ok("resultado");
+        });
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
