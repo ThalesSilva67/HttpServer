@@ -1,4 +1,4 @@
-package framework.http.response;
+package framework.server.http;
 
 public enum StatusCode {
     OK(200, "OK"),

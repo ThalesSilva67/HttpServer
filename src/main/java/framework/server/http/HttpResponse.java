@@ -1,4 +1,4 @@
-package framework.http.response;
+package framework.server.http;
 
 import java.nio.charset.StandardCharsets;
 
