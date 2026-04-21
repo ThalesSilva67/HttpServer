@@ -13,8 +13,7 @@ public class Router {
     }
 
     public HttpResponse handle(HttpRequest request) {
-        Route bestRoute = null;
-        Map<String, String> bestParams = null;
+        List<RouteCandidate> candidates = new ArrayList<>();
         int bestScore = -1;
 
         for (Route route : routes) {
@@ -25,19 +24,21 @@ public class Router {
             if (params != null) {
                 int score = route.getScore();
                 if (score > bestScore) {
-                    bestRoute = route;
-                    bestParams = params;
                     bestScore = score;
+                    candidates.clear();
+                    candidates.add(new RouteCandidate(route, params));
+                } else if (score == bestScore) {
+                    candidates.add(new RouteCandidate(route, params));
                 }
             }
 
         }
 
-        if (bestRoute != null) {
-            HttpRequest enriched = request.withPathParams(bestParams);
-            return bestRoute.getHandler().apply(enriched);
+        if (candidates.isEmpty()) {
+            return HttpResponse.notFound("Not Found");
         }
-
-        return HttpResponse.notFound("Not Found");
+        RouteCandidate candidate = candidates.getFirst();
+        HttpRequest enriched = request.withPathParams(candidate.getParams());
+        return candidate.getRoute().getHandler().apply(enriched);
     }
 }
