@@ -11,7 +11,7 @@ public class HttpRequest {
     private  final Map<String, String> queryParams;
     private  final Map<String, String> pathParams;
 
-    public HttpRequest(String method, String path, String version, HttpHeaders headers, Map<String, String> queryParams, Map<String, String> pathParams) {
+    private HttpRequest(String method, String path, String version, HttpHeaders headers, Map<String, String> queryParams, Map<String, String> pathParams) {
         if(method == null) throw new IllegalArgumentException("Method cannot be null");
         if(path == null) throw new IllegalArgumentException("Path cannot be null");
         if(version == null) throw new IllegalArgumentException("Version cannot be null");
@@ -23,6 +23,12 @@ public class HttpRequest {
         this.pathParams = Collections.unmodifiableMap(pathParams);
 
     }
+
+    public HttpRequest(String method, String path, String version,
+                       HttpHeaders headers, Map<String, String> queryParams) {
+        this(method, path, version, headers, queryParams, Map.of());
+    }
+
 
     public HttpRequest withPathParams(Map<String, String> params) {
         return new HttpRequest(this.method, this.path, this.version, this.headers, this.queryParams, params);
