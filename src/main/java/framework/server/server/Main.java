@@ -25,6 +25,13 @@ public class Main {
             String query = req.getQueryParams().get("id");
             return HttpResponse.ok("resultado");
         });
+        router.addRoute("GET","/user", req -> {
+            String id = req.getQueryParams().get("id");
+            if(id == null || id.isEmpty()) {
+                return HttpResponse.badRequest("id is required");
+            }
+            return HttpResponse.ok("User ID: " + id);
+        });
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
