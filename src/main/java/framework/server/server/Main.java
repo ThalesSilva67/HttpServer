@@ -31,7 +31,7 @@ public class Main {
         });
         router.addRoute("POST", "/teste", req -> {
             String body = req.getBody();
-            return HttpResponse.ok("body: " + body);
+            return HttpResponse.ok(body);
         });
 
         while (true) {
