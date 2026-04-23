@@ -17,19 +17,19 @@ public class Route {
         this.method = method;
         this.pathPattern = pathPattern;
         this.handler = handler;
-        this.parts = Arrays.stream(pathPattern.split("/+")).filter(p -> !p.isEmpty()).toList();
+        this.parts = splitPath(pathPattern);
         this.score = calculateScore(parts);
     }
 
     public Map<String, String> match(String path) {
-        String[] requestParts = path.split("/+");
+        List<String> requestParts = splitPath(path);
 
-        if(parts.size() != requestParts.length) return null;
+        if(parts.size() != requestParts.size()) return null;
 
         Map<String, String> params = new HashMap<>();
         for(int i = 0; i < parts.size(); i++) {
             String routePart = parts.get(i);
-            String requestPart = requestParts[i];
+            String requestPart = requestParts.get(i);
 
             if(routePart.startsWith("{") && routePart.endsWith("}")) {
                 String key = routePart.substring(1, routePart.length() - 1);
@@ -53,6 +53,10 @@ public class Route {
         }
 
         return score;
+    }
+
+    private static List<String> splitPath(String path) {
+        return Arrays.stream(path.split("/+")).filter(p -> !p.isEmpty()).toList();
     }
 
     public String getMethod() {
