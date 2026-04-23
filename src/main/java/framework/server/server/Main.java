@@ -29,6 +29,10 @@ public class Main {
             }
             return HttpResponse.ok("User ID: " + id);
         });
+        router.addRoute("POST", "/teste", req -> {
+            String body = req.getBody();
+            return HttpResponse.ok("body: " + body);
+        });
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
