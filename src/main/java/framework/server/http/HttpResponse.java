@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 public class HttpResponse {
     private StatusCode status;
     private String body;
-    private final HttpHeaders httpHeaders = new HttpHeaders();
+    private final ResponseHeaders httpHeaders = new ResponseHeaders();
 
     public HttpResponse(StatusCode status, String body) {
         this.status = status;
@@ -20,7 +20,7 @@ public class HttpResponse {
         this.body = body;
     }
 
-    public HttpHeaders getHeaders() {
+    public ResponseHeaders getHeaders() {
         return httpHeaders;
     }
 
@@ -40,13 +40,9 @@ public class HttpResponse {
         StringBuilder sb = new StringBuilder();
         sb.append("HTTP/1.1 ").append(status.CODE).append(" ").append(status.MESSAGE).append("\r\n");
 
-        httpHeaders.getHeaders().forEach((key, value) -> sb.append(key).append(": ").append(value).append("\r\n"));
-
         byte[] bodyBytes = finalBody.getBytes(StandardCharsets.UTF_8);
-        sb.append("Content-Length: ").append(bodyBytes.length).append("\r\n");
-
+        sb.append(httpHeaders.serialize(bodyBytes.length));
         sb.append("\r\n");
-
         sb.append(finalBody);
 
         return sb.toString();
