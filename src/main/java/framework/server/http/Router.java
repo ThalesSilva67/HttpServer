@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class Router {
-    private List<Route> routes = new ArrayList<>();
+    private final List<Route> routes = new ArrayList<>();
 
     public void addRoute(String method, String path, Function<HttpRequest, HttpResponse> handler) {
         routes.add(new Route(method, path, handler));
