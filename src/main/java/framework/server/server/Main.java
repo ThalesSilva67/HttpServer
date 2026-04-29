@@ -1,14 +1,12 @@
 package framework.server.server;
 
-import framework.server.http.HttpParser;
-import framework.server.http.HttpRequest;
-import framework.server.http.HttpResponse;
-import framework.server.http.Router;
+import framework.server.http.*;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,10 +16,6 @@ public class Main {
         ExecutorService executor = Executors.newFixedThreadPool(20);
         Router router = new Router();
         router.addRoute("GET","/", req -> HttpResponse.ok("hello world"));
-        router.addRoute("GET","/users", req -> {
-            String query = req.getQueryParams().get("id");
-            return HttpResponse.ok("resultado");
-        });
         router.addRoute("GET","/user", req -> {
             String id = req.getQueryParams().get("id");
             if(id == null || id.isEmpty()) {
@@ -32,6 +26,15 @@ public class Main {
         router.addRoute("POST", "/teste", req -> {
             String body = req.getBody();
             return HttpResponse.ok(body);
+        });
+        router.addRoute("POST", "/users", req -> {
+            Map<String, String> data = JsonParser.parse(req.getBody());
+            String name = data.get("name");
+            String age = data.get("age");
+            if(name == null || name.isEmpty() || age == null || age.isEmpty()) {
+                return HttpResponse.badRequest("name and age is required");
+            }
+            return HttpResponse.ok("User created: " + name + " - " + age + " anos");
         });
 
         while (true) {
