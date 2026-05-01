@@ -13,16 +13,17 @@ public class UserRepository {
     private static final Map<Integer, User> map = new ConcurrentHashMap<>();
 
     public static void save(String name, String email) {
-        if(existsEmail(email)) throw new IllegalArgumentException("Email already exists");
+        synchronized (UserRepository.class) {
+            if (existsEmail(email)) throw new IllegalArgumentException("Email already exists");
+            int id = idGenerator.incrementAndGet();
+            User u = new User(String.valueOf(id), name, email);
 
-        int id = idGenerator.incrementAndGet();
-        User u = new User(String.valueOf(id), name, email);
-
-        map.put(Integer.parseInt(u.getId()), u);
+            map.put(Integer.parseInt(u.getId()), u);
+        }
     }
 
-    public static synchronized List<String> findAll() {
-        if(map.isEmpty()) return new ArrayList<>();
+    public static List<String> findAll() {
+        if (map.isEmpty()) return new ArrayList<>();
         StringBuilder sb = new StringBuilder("Users: \n");
         for (User user : map.values()) {
             sb.append(user).append("\n");
@@ -31,17 +32,17 @@ public class UserRepository {
         return List.of(sb.toString());
     }
 
-    public static synchronized String findById(int id) {
-        if(map.isEmpty()) return null;
+    public static String findById(int id) {
+        if (map.isEmpty()) return null;
 
         User user = map.get(id);
-        if(user == null) return null;
+        if (user == null) return null;
 
         return user.toString();
     }
 
-    private static synchronized Boolean existsEmail(String email) {
-        if(map.isEmpty()) return false;
+    private static Boolean existsEmail(String email) {
+        if (map.isEmpty()) return false;
 
         return map.values().stream().anyMatch(u -> u.getEmail().equals(email));
     }
