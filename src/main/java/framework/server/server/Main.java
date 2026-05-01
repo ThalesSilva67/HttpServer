@@ -1,11 +1,13 @@
 package framework.server.server;
 
+import crud.repository.UserRepository;
 import framework.server.http.*;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,32 +17,44 @@ public class Main {
         ServerSocket serverSocket = new ServerSocket(8080);
         ExecutorService executor = Executors.newFixedThreadPool(20);
         Router router = new Router();
-        router.addRoute("GET","/", req -> HttpResponse.ok("hello world"));
-        router.addRoute("GET","/user", req -> {
-            String id = req.getQueryParams().get("id");
-            if(id == null || id.isEmpty()) {
-                return HttpResponse.badRequest("id is required");
-            }
-            return HttpResponse.ok("User ID: " + id);
-        });
-        router.addRoute("POST", "/teste", req -> {
-            String body = req.getBody();
-            return HttpResponse.ok(body);
-        });
+
         router.addRoute("POST", "/users", req -> {
             Map<String, String> data = JsonParser.parse(req.getBody());
             String name = data.get("name");
-            String age = data.get("age");
-            if(name == null || name.isEmpty() || age == null || age.isEmpty()) {
-                return HttpResponse.badRequest("name and age is required");
-            }
-            return HttpResponse.ok("User created: " + name + " - " + age + " anos");
+            String email = data.get("email");
+
+            if (name == null || name.isBlank()) return HttpResponse.badRequest("field name is required");
+            if (email == null || email.isBlank()) return HttpResponse.badRequest("field email is required");
+
+            UserRepository.save(name, email);
+
+            return HttpResponse.ok("User created");
         });
 
-        while (true) {
-            Socket clientSocket = serverSocket.accept();
+        router.addRoute("GET", "/users", req -> {
+            List<String> list = UserRepository.findAll();
 
-                try (Socket accept = clientSocket;
+            if (list.isEmpty()) return HttpResponse.notFound("Not users found");
+
+            return HttpResponse.ok(list.toString());
+        });
+
+        router.addRoute("GET", "/users/{id}", req -> {
+            try {
+                int id = Integer.parseInt(req.getPathParams().get("id"));
+                String user = UserRepository.findById(id);
+
+                if (user == null) return HttpResponse.notFound("Not user found");
+
+                return HttpResponse.ok(user);
+            } catch (NumberFormatException e) {
+                return HttpResponse.badRequest("Invalid user id");
+            }
+        });
+
+        executor.execute(() -> {
+            while (true) {
+                try (Socket accept = serverSocket.accept();
                      InputStreamReader isr = new InputStreamReader(accept.getInputStream(), StandardCharsets.UTF_8);
                      BufferedReader br = new BufferedReader(isr);
                      OutputStream os = accept.getOutputStream()) {
@@ -55,7 +69,8 @@ public class Main {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-        }
+            }
+        });
     }
 
 }
