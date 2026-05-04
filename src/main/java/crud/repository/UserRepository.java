@@ -16,35 +16,56 @@ public class UserRepository {
         synchronized (UserRepository.class) {
             if (existsEmail(email)) throw new IllegalArgumentException("Email already exists");
             int id = idGenerator.incrementAndGet();
-            User u = new User(String.valueOf(id), name, email);
+            User u = new User(id, name, email);
 
-            map.put(Integer.parseInt(u.getId()), u);
+            map.put(u.getId(), u);
         }
     }
 
-    public static List<String> findAll() {
+    public static List<User> findAll() {
         if (map.isEmpty()) return new ArrayList<>();
-        StringBuilder sb = new StringBuilder("Users: \n");
-        for (User user : map.values()) {
-            sb.append(user).append("\n");
-        }
-
-        return List.of(sb.toString());
+        return new ArrayList<>(map.values());
     }
 
-    public static String findById(int id) {
+    public static User findById(int id) {
         if (map.isEmpty()) return null;
 
-        User user = map.get(id);
-        if (user == null) return null;
+        return map.get(id);
+    }
 
-        return user.toString();
+    public static User update(int id, String name, String email) {
+        User oldUser = findById(id);
+        if (oldUser == null) return null;
+
+        Boolean emailFlag = existsEmailExcludingId(email, oldUser.getId());
+        if (emailFlag) return null;
+
+        User newUser = new User(oldUser.getId(), name, email);
+        map.put(oldUser.getId(), newUser);
+
+        return newUser;
+    }
+
+    public static User delete(int id) {
+        if (map.isEmpty()) return null;
+
+        return map.remove(id);
     }
 
     private static Boolean existsEmail(String email) {
         if (map.isEmpty()) return false;
 
         return map.values().stream().anyMatch(u -> u.getEmail().equals(email));
+    }
+
+    private static Boolean existsEmailExcludingId(String email, int id) {
+        if (map.isEmpty()) return false;
+        for (User user : map.values()) {
+            if (user.getEmail().equals(email) && user.getId() != id) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
