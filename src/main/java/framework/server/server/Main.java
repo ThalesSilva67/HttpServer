@@ -1,5 +1,6 @@
 package framework.server.server;
 
+import crud.model.User;
 import crud.repository.UserRepository;
 import framework.server.http.*;
 
@@ -32,21 +33,65 @@ public class Main {
         });
 
         router.addRoute("GET", "/users", req -> {
-            List<String> list = UserRepository.findAll();
+            List<User> users = UserRepository.findAll();
+            if (users.isEmpty()) return HttpResponse.notFound("Not users found");
+            StringBuilder sb = new StringBuilder();
+            sb.append("[\n");
+            for (int i = 0; i < users.size(); i++) {
+                sb.append(users.get(i).toJson());
+                if(i < users.size()-1) {
+                    sb.append(",");
+                }
+                sb.append("\n");
+            }
+            sb.append("]");
 
-            if (list.isEmpty()) return HttpResponse.notFound("Not users found");
-
-            return HttpResponse.ok(list.toString());
+            return HttpResponse.ok(sb.toString());
         });
 
         router.addRoute("GET", "/users/{id}", req -> {
             try {
                 int id = Integer.parseInt(req.getPathParams().get("id"));
-                String user = UserRepository.findById(id);
+                User user = UserRepository.findById(id);
 
                 if (user == null) return HttpResponse.notFound("Not user found");
 
-                return HttpResponse.ok(user);
+                return HttpResponse.ok(user.toJson());
+            } catch (NumberFormatException e) {
+                return HttpResponse.badRequest("Invalid user id");
+            }
+        });
+
+        router.addRoute("PUT", "/users/{id}", req -> {
+            try {
+                int id = Integer.parseInt(req.getPathParams().get("id"));
+                User oldUser = UserRepository.findById(id);
+                if (oldUser == null) return HttpResponse.notFound("Not user found");
+
+                Map<String, String> data = JsonParser.parse(req.getBody());
+                String name = data.get("name");
+                String email = data.get("email");
+
+                if (name == null || name.isBlank()) return HttpResponse.badRequest("field name is required");
+                if (email == null || email.isBlank()) return HttpResponse.badRequest("field email is required");
+
+                User update = UserRepository.update(oldUser.getId(), name, email);
+
+                if (update == null) return HttpResponse.badRequest("Email already in use");
+
+                return HttpResponse.ok(update.toString());
+            } catch (NumberFormatException e) {
+                return HttpResponse.badRequest("Invalid user id");
+            }
+        });
+
+        router.addRoute("DELETE", "/users/{id}", req -> {
+            try {
+                int id = Integer.parseInt(req.getPathParams().get("id"));
+                User removed = UserRepository.delete(id);
+                if (removed == null) return HttpResponse.notFound("Not user found");
+
+                return HttpResponse.ok("User deleted");
             } catch (NumberFormatException e) {
                 return HttpResponse.badRequest("Invalid user id");
             }
