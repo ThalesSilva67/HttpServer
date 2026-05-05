@@ -3,6 +3,7 @@ package framework.server.server;
 import crud.model.User;
 import crud.repository.UserRepository;
 import framework.server.http.*;
+import serializer.JsonSerializer;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -24,29 +25,18 @@ public class Main {
             String name = data.get("name");
             String email = data.get("email");
 
-            if (name == null || name.isBlank()) return HttpResponse.badRequest("field name is required");
-            if (email == null || email.isBlank()) return HttpResponse.badRequest("field email is required");
+            if (name == null || name.isBlank()) return HttpResponse.badRequestJson(JsonSerializer.toJson("field name is required"));
+            if (email == null || email.isBlank()) return HttpResponse.badRequestJson(JsonSerializer.toJson("field email is required"));
 
             UserRepository.save(name, email);
 
-            return HttpResponse.ok("User created");
+            return HttpResponse.okJson(JsonSerializer.toJson("User created"));
         });
 
         router.addRoute("GET", "/users", req -> {
             List<User> users = UserRepository.findAll();
-            if (users.isEmpty()) return HttpResponse.notFound("Not users found");
-            StringBuilder sb = new StringBuilder();
-            sb.append("[\n");
-            for (int i = 0; i < users.size(); i++) {
-                sb.append(users.get(i).toJson());
-                if(i < users.size()-1) {
-                    sb.append(",");
-                }
-                sb.append("\n");
-            }
-            sb.append("]");
-
-            return HttpResponse.ok(sb.toString());
+            if (users.isEmpty()) return HttpResponse.notFoundJson(JsonSerializer.toJson("Not users found"));
+            return HttpResponse.okJson(JsonSerializer.toJson(users));
         });
 
         router.addRoute("GET", "/users/{id}", req -> {
@@ -54,11 +44,11 @@ public class Main {
                 int id = Integer.parseInt(req.getPathParams().get("id"));
                 User user = UserRepository.findById(id);
 
-                if (user == null) return HttpResponse.notFound("Not user found");
+                if (user == null) return HttpResponse.notFoundJson(JsonSerializer.toJson("Not user found"));
 
-                return HttpResponse.ok(user.toJson());
+                return HttpResponse.okJson(JsonSerializer.toJson(user));
             } catch (NumberFormatException e) {
-                return HttpResponse.badRequest("Invalid user id");
+                return HttpResponse.badRequestJson(JsonSerializer.toJson("invalid user id"));
             }
         });
 
@@ -66,22 +56,22 @@ public class Main {
             try {
                 int id = Integer.parseInt(req.getPathParams().get("id"));
                 User oldUser = UserRepository.findById(id);
-                if (oldUser == null) return HttpResponse.notFound("Not user found");
+                if (oldUser == null) return HttpResponse.notFoundJson(JsonSerializer.toJson(JsonSerializer.toJson("Not user found")));
 
                 Map<String, String> data = JsonParser.parse(req.getBody());
                 String name = data.get("name");
                 String email = data.get("email");
 
-                if (name == null || name.isBlank()) return HttpResponse.badRequest("field name is required");
-                if (email == null || email.isBlank()) return HttpResponse.badRequest("field email is required");
+                if (name == null || name.isBlank()) return HttpResponse.badRequestJson(JsonSerializer.toJson("field name is required"));
+                if (email == null || email.isBlank()) return HttpResponse.badRequestJson(JsonSerializer.toJson("field email is required"));
 
                 User update = UserRepository.update(oldUser.getId(), name, email);
 
-                if (update == null) return HttpResponse.badRequest("Email already in use");
+                if (update == null) return HttpResponse.badRequestJson(JsonSerializer.toJson("Email already in use"));
 
-                return HttpResponse.ok(update.toString());
+                return HttpResponse.okJson(JsonSerializer.toJson(update));
             } catch (NumberFormatException e) {
-                return HttpResponse.badRequest("Invalid user id");
+                return HttpResponse.badRequestJson(JsonSerializer.toJson("invalid user id"));
             }
         });
 
@@ -89,11 +79,11 @@ public class Main {
             try {
                 int id = Integer.parseInt(req.getPathParams().get("id"));
                 User removed = UserRepository.delete(id);
-                if (removed == null) return HttpResponse.notFound("Not user found");
+                if (removed == null) return HttpResponse.notFoundJson(JsonSerializer.toJson("Not user found"));
 
-                return HttpResponse.ok("User deleted");
+                return HttpResponse.okJson(JsonSerializer.toJson("User deleted"));
             } catch (NumberFormatException e) {
-                return HttpResponse.badRequest("Invalid user id");
+                return HttpResponse.badRequestJson(JsonSerializer.toJson("invalid user id"));
             }
         });
 
