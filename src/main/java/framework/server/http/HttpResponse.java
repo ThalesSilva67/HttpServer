@@ -22,7 +22,7 @@ public class HttpResponse {
 
     public String toHttpString() {
         String finalBody = (body == null) ? "" : body;
-        if(status == null) throw new IllegalStateException("Status code cannot be null");
+        if (status == null) throw new IllegalStateException("Status code cannot be null");
 
         StringBuilder sb = new StringBuilder();
         sb.append("HTTP/1.1 ").append(status.CODE).append(" ").append(status.MESSAGE).append("\r\n");
@@ -36,20 +36,33 @@ public class HttpResponse {
     }
 
     public static HttpResponse ok(String body) {
-        HttpResponse response = new HttpResponse(StatusCode.OK, body);
-        response.getHeaders().addHeader("Content-Type", "text/plain; charset=utf-8");
-        return response;
+        return build(StatusCode.OK, body, "text/plain; charset=utf-8");
     }
 
     public static HttpResponse notFound(String body) {
-        HttpResponse response = new HttpResponse(StatusCode.NOT_FOUND, body);
-        response.getHeaders().addHeader("Content-Type", "text/plain; charset=utf-8");
-        return response;
+        return build(StatusCode.NOT_FOUND, body, "text/plain; charset=utf-8");
     }
 
     public static HttpResponse badRequest(String body) {
-        HttpResponse response = new HttpResponse(StatusCode.BAD_REQUEST, body);
-        response.getHeaders().addHeader("Content-Type", "text/plain; charset=utf-8");
+        return build(StatusCode.BAD_REQUEST, body, "text/plain; charset=utf-8");
+    }
+
+    public static HttpResponse okJson(String body) {
+        return build(StatusCode.OK, body, "application/json; charset=utf-8");
+    }
+
+    public static HttpResponse notFoundJson(String body) {
+        return build(StatusCode.NOT_FOUND, body, "application/json; charset=utf-8");
+    }
+
+    public static HttpResponse badRequestJson(String body) {
+        return build(StatusCode.BAD_REQUEST, body, "application/json; charset=utf-8");
+    }
+
+    private static HttpResponse build(StatusCode status, String body, String contentType) {
+        HttpResponse response = new HttpResponse(status, body);
+        response.getHeaders().addHeader("Content-Type", contentType);
         return response;
     }
+
 }
