@@ -1,9 +1,9 @@
 package serializer;
 
-import crud.model.User;
+import aplication.model.User;
+import framework.server.json.JsonSerializer;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 

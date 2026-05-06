@@ -1,4 +1,4 @@
-package crud.model;
+package aplication.model;
 
 public class User {
     private final int id;

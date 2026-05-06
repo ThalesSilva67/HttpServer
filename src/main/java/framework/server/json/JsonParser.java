@@ -1,4 +1,4 @@
-package framework.server.http;
+package framework.server.json;
 
 import java.util.Collections;
 import java.util.HashMap;

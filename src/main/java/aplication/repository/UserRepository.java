@@ -1,6 +1,6 @@
-package crud.repository;
+package aplication.repository;
 
-import crud.model.User;
+import aplication.model.User;
 
 import java.util.ArrayList;
 import java.util.List;

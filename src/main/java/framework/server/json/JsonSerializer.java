@@ -1,6 +1,6 @@
-package serializer;
+package framework.server.json;
 
-import crud.model.User;
+import aplication.model.User;
 
 import java.util.List;
 import java.util.Map;

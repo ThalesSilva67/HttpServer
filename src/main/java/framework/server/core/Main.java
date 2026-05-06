@@ -1,9 +1,11 @@
-package framework.server.server;
+package framework.server.core;
 
-import crud.model.User;
-import crud.repository.UserRepository;
+import aplication.model.User;
+import aplication.repository.UserRepository;
 import framework.server.http.*;
-import serializer.JsonSerializer;
+import framework.server.routing.Router;
+import framework.server.json.JsonParser;
+import framework.server.json.JsonSerializer;
 
 import java.io.*;
 import java.net.ServerSocket;
